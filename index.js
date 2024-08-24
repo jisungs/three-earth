@@ -37,8 +37,10 @@ const lightsMat = new THREE.MeshBasicMaterial({
     // transparent : true,
     // opacity:0.6,
     map: loader.load("/textures/earthlights1k.jpg"),
-    blending: THREE.AdditiveBlending, // 블렌딩 모드 변경
-    
+    blending: THREE.NormalBlending, // 블렌딩 모드를 NormalBlending으로 변경
+    transparent: true, // 텍스처의 투명도를 사용하여 밤의 불빛이 자연스럽게 보이도록 함
+    opacity: 0.4, // 필요한 경우 투명도를 조절하여 밤 텍스처 강조
+
   });
 const lightsMesh = new THREE.Mesh(geometry, lightsMat);
 // 녹색 구가 지구를 완전히 덮도록 약간 크게 설정

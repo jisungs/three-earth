@@ -1,12 +1,14 @@
 import * as THREE from "three";
 import { OrbitControls } from 'jsm/controls/OrbitControls.js';
+
 import getStarfield from "./src/getStarfield.js";
+import {getFresnelMat} from "./src/getFresnelMat.js";
 
 const w = window.innerWidth;
 const h = window.innerHeight;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
-camera.position.z = 5;
+camera.position.z = 3;
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(w, h);
 document.body.appendChild(renderer.domElement);
@@ -26,8 +28,19 @@ const geometry  = new THREE.IcosahedronGeometry(1, detail);
 const material = new THREE.MeshPhongMaterial({
     // color: 0xffff00,
     // flatShading : true,
-    map: loader.load("./textures/earthmap1k.jpg"),
+    map: loader.load("textures/00_earthmap1k.jpg"),
+    specularMap: loader.load("./textures/02_earthspec1k.jpg"),
+    bumpMap: loader.load("./textures/01_earthbump1k.jpg"),
+    bumpScale: 0.04,
 })
+
+
+
+
+
+
+
+// material.map.colorSpace = THREE.SRGBColorSpace;
 const earthMesh = new THREE.Mesh(geometry, material);
 scene.add(earthMesh)
 
@@ -36,16 +49,33 @@ const lightsMat = new THREE.MeshBasicMaterial({
     // color:0x00ff00,
     // transparent : true,
     // opacity:0.6,
-    map: loader.load("/textures/earthlights1k.jpg"),
-    blending: THREE.NormalBlending, // 블렌딩 모드를 NormalBlending으로 변경
+    map: loader.load("textures/03_earthlights1k.jpg"),
+    blending: THREE.AdditiveBlending, // 블렌딩 모드를 NormalBlending으로 변경
     transparent: true, // 텍스처의 투명도를 사용하여 밤의 불빛이 자연스럽게 보이도록 함
-    opacity: 0.4, // 필요한 경우 투명도를 조절하여 밤 텍스처 강조
+    opacity: 0.5, // 필요한 경우 투명도를 조절하여 밤 텍스처 강조
 
   });
 const lightsMesh = new THREE.Mesh(geometry, lightsMat);
 // 녹색 구가 지구를 완전히 덮도록 약간 크게 설정
-lightsMesh.scale.set(1.01, 1.01, 1.01);
+lightsMesh.scale.set(1.002, 1.002, 1.002);
 earthGroup.add(lightsMesh);
+
+//구름 추가 
+const cloudsMat = new THREE.MeshStandardMaterial({
+    map: loader.load("./textures/04_earthcloudmap.jpg"),
+    transparent:true,
+    opacity:0.8,
+    blending: THREE.AdditiveBlending,
+    alphaMap: loader.load('./textures/05_earthcloudmaptrans.jpg'),
+});
+const cloudsMesh = new THREE.Mesh(geometry, cloudsMat);
+cloudsMesh.scale.setScalar(1.005, 1.005, 1.005);
+earthGroup.add(cloudsMesh);
+
+const fresnelMat = getFresnelMat();
+const glowMesh = new THREE.Mesh(geometry, fresnelMat)
+glowMesh.scale.setScalar(1.01);
+earthGroup.add(glowMesh)
 
 
 //지구 주변에 별 추가
@@ -65,7 +95,8 @@ function animate(){
     // earthMesh.rotation.x += 0.01;
     earthMesh.rotation.y += 0.002;
     lightsMesh.rotation.y += 0.002;
-
+    cloudsMesh.rotation.y += 0.003;
+    glowMesh.rotation.y += 0.002;
     renderer.render(scene,camera);
     // controls.update();//궤도 조정 업데이트
 }
